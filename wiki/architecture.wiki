@@ -1,0 +1,10 @@
+#summary How does it work.
+
+= Introduction =
+
+It uses pipes
+
+
+= Details =
+
+Diagram on its way
