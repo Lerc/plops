@@ -1,0 +1,83 @@
+#!/bin/bash
+
+FPC_VERSION_NEEDED=2.4.0
+
+FPC_OPTIONS="-MObjFPC -Scgi -CX -Os3 -OoUNCERTAIN -OoREGVAR -Xs -XX -Xi -FUobj" 
+
+function cmpversion()
+{
+    # just in case we get whole numbers, we append a .0 to the end of everything
+    p1="${1}.0"
+    p2="${2}.0"
+    val1=`expr "$p1" : '\([0-9]*\)'`
+    val2=`expr "$p2" : '\([0-9]*\)'`
+   
+    winner=0
+    index=1
+    while [[ ( -n "$val1" ||  -n "$val2" ) && "$winner" -eq "0" && "$index" -lt "10" ]]
+    do
+      # null is the same as 0 if we are still trying to match something
+      if [ -z "$val1" ]
+        then
+              val1=0
+      fi
+      if [ -z "$val2" ]
+        then
+              val2=0
+      fi
+     
+      # the greater number is always the winner at any equal tuple
+      if [[ "$val1" -gt "$val2" ]]
+      then
+        winner=1;
+      fi
+      if [[ "$val2" -gt "$val1" ]]
+      then
+        winner=2;
+      fi
+   
+      # make sure we end this thing on bad input
+      p1_next_tuple_exists=`expr "$p1" : '[0-9]*\.'`
+      if [[ "$p1_next_tuple_exists" -gt 0 ]]
+      then
+        p1="${p1#*.}"
+      else
+        p1=""
+      fi
+      p2_next_tuple_exists=`expr "$p2" : '[0-9]*\.'`
+      if [[ "$p2_next_tuple_exists" -gt 0 ]]
+      then
+        p2="${p2#*.}"
+      else
+        p2=""
+      fi
+     
+      let "index = $index + 1"
+      val1="`expr "$p1" : '\([0-9]*\)'`"
+      val2="`expr "$p2" : '\([0-9]*\)'`"
+    done
+   
+    return $winner
+}
+
+if test -z `which fpc` ; then
+   echo No fpc found
+   echo You need freepascal $FPC_VERSION_NEEDED or greater
+   exit
+fi
+
+fpcver=`fpc -iV` 
+cmpversion $fpcver $FPC_VERSION_NEEDED
+V=$?
+if test $V -gt 1  ; then
+  echo your freepascal version is $fpcver
+  echo you need at least $FPC_VERSION_NEEDED
+  exit
+fi
+
+fpc $FPC_OPTIONS -FE. src/plops.pas
+fpc $FPC_OPTIONS -FE./widgets/clock src/clock.pas
+fpc $FPC_OPTIONS -FE./widgets/battery src/battery.pas
+fpc $FPC_OPTIONS -FE./widgets/calculator -ocalculator src/calc.pas
+
+
