@@ -1,8 +1,5 @@
-This is the source for Plops and the Clock,battery 
-and Calculator widgets.
+The main files for each program are symlinks to projectfiles where
+they are stored as part of Lazarus projects.
 
-It uses fgl so needs a recent version of freepascal.
-
-I'm afraid there are no project or make files here yeat for easy 
-builing,  I wasn't sure how viable the setup I'm running would
-be on other systems.
+Apart from that, all of the source required to build should be in this
+directory.

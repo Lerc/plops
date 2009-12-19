@@ -1,0 +1,42 @@
+This is Plops, a lightweight, just-the-basics desktop widget engine
+
+To compile you need freepascal 2.4+ and Imlib2 (plus the dev package (libimlib2-dev or similar))
+
+If you have freepascal all set up then ./compile should build everything for you.
+
+There are Lazarus project files for the individual programs in the projectfiles directory.
+
+To try out the widgets, for now just go 
+
+./plops clock battery calculator
+
+Still lacks a bunch of things, Remembering window placement, maganement of depth etc.
+
+The calculater uses  the script 'evaluate' in the calulator diretorcy to do the acutal
+calculation .  That just calls wcalc.  you can either have wcalc installed or change the 
+script to something else that will do the job  
+
+The battery reads the charge level from a file linked to from within the battery directory.
+By default it just links to a file containing the number 42.  
+Change the link to point to where the battery level is mapped
+something like /sys/class/power supply/etc/whathaveyou
+
+OMGWTF:
+I can't see any widgets.
+
+LOLWAT:
+They are in front of the desktop, but behind all other windows.   Try minimizing windows.
+
+
+
+OMGWTF:
+The widgets have window borders
+
+LOLWAT:
+There isn't a wiget window type so You have to try for a best fit.
+The window type can be set with --windowtype=_NET_WM_WINDOW_TYPE_SOMETHING
+
+try _NET_WM_WINDOW_TYPE_DOCK, that seems to work for metacity  
+
+
+
