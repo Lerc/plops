@@ -41,6 +41,8 @@ begin
   Flush(CommandPipe);
 end;
 
+{$IFDEF WINDOWS}{$R clock.rc}{$ENDIF}
+
 begin
   //BaseDir:=ExtractFilePath(Paramstr(0));
 //  writeln('opening pipe '+BaseDir+'/commands');

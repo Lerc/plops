@@ -60,10 +60,47 @@ var
   WindowState_Skip_Taskbar_atom : tAtom;
   WindowState_Sticky_atom : tAtom;
   WindowState_OpenBox_Undecorated_atom : tAtom;
+  Motif_Hints_atom : tAtom;
 
   ChosenWindowType_atom : tAtom;
 implementation
 
+type
+  tMWMHints = record
+    flags : DWORD;
+    functions : DWORD;
+    decorations : DWORD;
+    inputMode : integer;
+    status : DWORD;
+  end;
+const
+  MWM_HINTS_FUNCTIONS = 1 shl 0;
+  MWM_HINTS_DECORATIONS = 1 shl 1;
+  MWM_HINTS_INPUT_MODE = 1 shl 2;
+  MWM_HINTS_STATUS = 1 shl 3;
+
+  MWM_FUNC_ALL = 1 shl 0;
+  MWM_FUNC_RESIZE = 1 shl 1;
+  MWM_FUNC_MOVE = 1 shl 2;
+  MWM_FUNC_MAXIMIZE = 1 shl 3;
+  MWM_FUNC_MINIMIZE = 1 shl 4;
+  MWM_FUNC_CLOSE = 1 shl 5;
+
+  MWM_DECOR_ALL = 1 shl 0;
+  MWM_DECOR_BORDER = 1 shl 1;
+  MWM_DECOR_RESHIZEH = 1 shl 2;
+  MWM_DECOR_TITLE = 1 shl 3;
+  MWM_DECOR_MENU = 1 shl 4;
+  MWM_DECOR_MINIMIZE = 1 shl 5;
+  MWM_DECOR_MAXIMIZE = 1 shl 6;
+
+  MWM_INPUT_MODELESS = 0;
+  MWM_INPUT_PRIMARY_APPLICATION_MODAL = 1;
+  MWM_INPUT_SYSTEM_MODAL = 2;
+  MWM_INPUT_FULL_APPLICATION_MODAL = 3;
+
+  PROP_MWM_HINTS_ELEMENTS = 5;
+  PROP_MWM_HINTS_ELEMENTS_MIN = 4;
 
 procedure XShapeCombineMask(Display: PDisplay; W: twindow; DestKind : integer; xoffset:integer; yOffset : integer; mask : tPixmap; op : integer); cdecl;
                      external 'Xext' name 'XShapeCombineMask';
@@ -99,6 +136,7 @@ begin
 
   WindowType:=OptionValue('WindowType','_NET_WM_WINDOW_TYPE_NOTIFICATION');
   ChosenWindowType_atom := XInternAtom(Display,pchar(WindowType),True);
+  Motif_Hints_atom :=XInternAtom(Display,'_MOTIF_WM_HINTS',False);
 
 end;
 
@@ -145,6 +183,7 @@ constructor tWidgetWindow.Create(x, y, nwidth, nheight: integer);
 var
   AttributeMask : longint;
   Attributes : TXSetWindowAttributes;
+  mwmHints : tMWMHints;
 begin
   fWidth:= nWidth;
   fHeight:=nHeight;
@@ -174,6 +213,10 @@ KeyReleaseMask+ExposureMask+ButtonPressMask+ButtonReleaseMask+ButtonMotionMask);
  XChangeProperty(Display,Window,WindowType_atom,XA_ATOM,32,PropModeReplace,addr(ChosenWindowType_atom),1);
  XChangeProperty(Display,Window,WindowState_atom,XA_ATOM,32,PropModeReplace,addr(WindowState[0]),length(WindowState));
 
+ fillchar(mwmhints,Sizeof(mwmHints),0);
+ mwmHints.flags := MWM_HINTS_DECORATIONS;
+ mwmHints.decorations :=0;
+ XChangeProperty(Display,Window,Motif_Hints_Atom,Motif_Hints_ATOM,32,PropModeReplace,addr(mwmHints),PROP_MWM_HINTS_ELEMENTS);
   xMapwindow(Display,window);
   AdaptToSize;
   eventMask := tBitMask.create(0,0);

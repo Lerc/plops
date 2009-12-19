@@ -2,7 +2,7 @@
 
 FPC_VERSION_NEEDED=2.4.0
 
-FPC_OPTIONS="-MObjFPC -Scgi -CX -Os3 -OoUNCERTAIN -OoREGVAR -Xs -XX -Xi -FUobj" 
+FPC_OPTIONS="-MObjFPC -Scgi -CX -Os3 -OoUNCERTAIN -OoREGVAR -Xs -XX -Xi -FUobj -Ch16384 -Cs8192" 
 
 function cmpversion()
 {
@@ -60,6 +60,19 @@ function cmpversion()
     return $winner
 }
 
+function createpipes()
+{
+
+    commandpipe="${1}/commands"
+    eventpipe="${1}/events"
+    if test ! -p $commandpipe ; then
+      mkfifo $commandpipe
+    fi
+    if test ! -p $eventpipe ; then
+      mkfifo $eventpipe
+    fi
+}
+
 if test -z `which fpc` ; then
    echo No fpc found
    echo You need freepascal $FPC_VERSION_NEEDED or greater
@@ -79,5 +92,9 @@ fpc $FPC_OPTIONS -FE. src/plops.pas
 fpc $FPC_OPTIONS -FE./widgets/clock src/clock.pas
 fpc $FPC_OPTIONS -FE./widgets/battery src/battery.pas
 fpc $FPC_OPTIONS -FE./widgets/calculator -ocalculator src/calc.pas
+
+createpipes ./widgets/clock
+createpipes ./widgets/battery
+createpipes ./widgets/calculator
 
 
