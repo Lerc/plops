@@ -30,7 +30,7 @@
         <LaunchingApplication PathPlusParams="/usr/X11R6/bin/xterm -T 'Lazarus Run Output' -e $(LazarusDir)/tools/runwait.sh $(TargetCmdLine)"/>
       </local>
     </RunParams>
-    <Units Count="1">
+    <Units Count="6">
       <Unit0>
         <Filename Value="plops.pas"/>
         <IsPartOfProject Value="True"/>
@@ -38,9 +38,39 @@
         <CursorPos X="8" Y="6"/>
         <TopLine Value="1"/>
         <EditorIndex Value="0"/>
-        <UsageCount Value="20"/>
+        <UsageCount Value="55"/>
         <Loaded Value="True"/>
       </Unit0>
+      <Unit1>
+        <Filename Value="../src/bitmasks.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="bitmasks"/>
+        <UsageCount Value="55"/>
+      </Unit1>
+      <Unit2>
+        <Filename Value="../src/eventloop.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="eventloop"/>
+        <UsageCount Value="55"/>
+      </Unit2>
+      <Unit3>
+        <Filename Value="../src/Imlib.pp"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="Imlib"/>
+        <UsageCount Value="55"/>
+      </Unit3>
+      <Unit4>
+        <Filename Value="../src/Widgethandlers.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="Widgethandlers"/>
+        <UsageCount Value="55"/>
+      </Unit4>
+      <Unit5>
+        <Filename Value="../src/WidgetWindows.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="WidgetWindows"/>
+        <UsageCount Value="55"/>
+      </Unit5>
     </Units>
     <JumpHistory Count="0" HistoryIndex="-1"/>
   </ProjectOptions>
@@ -50,7 +80,8 @@
       <Filename Value="../plops"/>
     </Target>
     <SearchPaths>
-      <UnitOutputDirectory Value="lib/$(TargetCPU)-$(TargetOS)"/>
+      <OtherUnitFiles Value="../src/"/>
+      <UnitOutputDirectory Value="../obj"/>
     </SearchPaths>
     <Other>
       <CompilerPath Value="$(CompPath)"/>
