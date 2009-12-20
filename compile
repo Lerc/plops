@@ -92,9 +92,11 @@ fpc $FPC_OPTIONS -FE. src/plops.pas
 fpc $FPC_OPTIONS -FE./widgets/clock src/clock.pas
 fpc $FPC_OPTIONS -FE./widgets/battery src/battery.pas
 fpc $FPC_OPTIONS -FE./widgets/calculator -ocalculator src/calc.pas
+fpc $FPC_OPTIONS -FE./widgets/graph src/graph.pas
 
 createpipes ./widgets/clock
 createpipes ./widgets/battery
 createpipes ./widgets/calculator
+createpipes ./widgets/graph
 
 
