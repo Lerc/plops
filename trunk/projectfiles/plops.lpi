@@ -13,7 +13,7 @@
       <Title Value="plops"/>
       <Icon Value="0"/>
       <UseXPManifest Value="True"/>
-      <ActiveEditorIndexAtStart Value="0"/>
+      <ActiveEditorIndexAtStart Value="1"/>
     </General>
     <VersionInfo>
       <ProjectVersion Value=""/>
@@ -36,40 +36,44 @@
         <IsPartOfProject Value="True"/>
         <UnitName Value="plops"/>
         <CursorPos X="8" Y="6"/>
-        <TopLine Value="1"/>
+        <TopLine Value="6"/>
         <EditorIndex Value="0"/>
-        <UsageCount Value="55"/>
+        <UsageCount Value="94"/>
         <Loaded Value="True"/>
       </Unit0>
       <Unit1>
         <Filename Value="../src/bitmasks.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="bitmasks"/>
-        <UsageCount Value="55"/>
+        <UsageCount Value="94"/>
       </Unit1>
       <Unit2>
         <Filename Value="../src/eventloop.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="eventloop"/>
-        <UsageCount Value="55"/>
+        <UsageCount Value="94"/>
       </Unit2>
       <Unit3>
         <Filename Value="../src/Imlib.pp"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="Imlib"/>
-        <UsageCount Value="55"/>
+        <UsageCount Value="94"/>
       </Unit3>
       <Unit4>
         <Filename Value="../src/Widgethandlers.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="Widgethandlers"/>
-        <UsageCount Value="55"/>
+        <CursorPos X="1" Y="470"/>
+        <TopLine Value="458"/>
+        <EditorIndex Value="1"/>
+        <UsageCount Value="94"/>
+        <Loaded Value="True"/>
       </Unit4>
       <Unit5>
         <Filename Value="../src/WidgetWindows.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="WidgetWindows"/>
-        <UsageCount Value="55"/>
+        <UsageCount Value="94"/>
       </Unit5>
     </Units>
     <JumpHistory Count="0" HistoryIndex="-1"/>
