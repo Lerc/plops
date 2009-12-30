@@ -47,6 +47,8 @@ protected
     ButtonRootY : integer;
     Connected : boolean;
     buttonshadow : array [0..15] of boolean;
+    LastCommand : String;
+    LastCommandCode : tCommand;
     procedure OpenPipes;
     procedure ClosePipes;
 
@@ -54,6 +56,7 @@ public
 	  Commands : tInputPipeStream;
 	  Results : tOutputPipeStream;
 	  Events : Text;
+    EventsOn : boolean;
     procedure SetCurrentWindow (Name : String);
     procedure MakeEventMask;
     Procedure StartEvents;
@@ -256,14 +259,14 @@ begin
   //if Events > 0 then exit;
   assign(Events,BaseDirectory+'/events');
   rewrite(events);
+  EventsOn := true;
 end;
 
 procedure tWidgetHandler.SendEvent(S: String);
 begin
+  if not EventsOn then exit;
    writeln(Events,s);
    Flush(Events);
-//   s+=#10;
-//  fpwrite(Events,pchar(s),length(s));
 end;
 
 procedure tWidgetHandler.UpdateWindow(W: tWidgetWindow);
@@ -279,7 +282,7 @@ begin
 end;
 
 function KeyToAscii(KeyCode,state,Keysym:integer) : integer;
-//this is'nt really the right way to do this.
+//this isn't really the right way to do this.
 // it ignores keyboard mappings
 
 var
@@ -457,15 +460,26 @@ var
   Font : tFont;
   Filename : String;
   line : String;
+  command : String;
 begin
   //writeln(Parameters.text);
-  I := CommandsByName.IndexOf(parameters[0]);
-  if I < 0 then
+  Command := parameters[0];
+  if command = LastCommand then
   begin
-    writeln('Unknown Command:"'+Parameters[0]+'"');
-    exit;
+    CommandCode := LastCommandCode;
+  end
+  else
+  begin
+    I := CommandsByName.IndexOf(Command);
+    if I < 0 then
+    begin
+      writeln('Unknown Command:"'+Command+'"');
+      exit;
+    end;
+    CommandCode := CommandsByName.Data[I];
+    LastCommandCode := CommandCode;
+    LastCommand:=Command;
   end;
-  CommandCode := CommandsByName.Data[I];
   P := Parameters;  //simply for brevity;
 
   imlib.Context_push(imlibContext);
