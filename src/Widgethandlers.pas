@@ -69,10 +69,14 @@ public
     Fonts : tImagesByName;
 
     BaseDirectory : String;
+    WidgetName : String;
     CurrentWindow_Name : string;
     CurrentWindow : tWidgetWindow;
 
     procedure UpdateWindow(W : tWidgetWindow);
+    procedure RecallWindow(W : tWidgetWindow);
+    procedure StoreWindow(W : tWidgetWindow);
+
 		procedure AddWindow(Name : String; X,Y,W,H : integer);
 		procedure RemoveWindow(Name : String);
 
@@ -82,7 +86,7 @@ public
     procedure AddFont(name : String;  Font : tFont);
     Procedure FreeFont(Name : String);
 
-		constructor Create(nBaseDirectory: String);
+		constructor Create(nBaseDirectory: String; nname : String);
 		destructor Destroy; override;
 
 		procedure HandleXEvent(var event : tXevent; EventWindow : tWidgetWindow);
@@ -100,7 +104,7 @@ var
 	HandlersByXHandle : tXwindowToHandlerMap;
   WidgetWindowsByXHandle : tXwindowToWidgetWindowMap;
 implementation
-uses termio,Bitmasks;
+uses termio,Bitmasks,configuration;
 { tWidgetHandler }
 
 procedure tWidgetHandler.AddWindow(Name: String; X, Y, W, H: integer);
@@ -113,7 +117,9 @@ begin
   WidgetWindowsByXHandle.add(NewWindow.Window,NewWindow);
   Images.Add(name,NewWindow.Image);
   CurrentWindow:=NewWindow;
+  CurrentWindow.Name:=Name;
   CurrentWindow_name := Name;
+  RecallWindow(NewWindow);
 end;
 
 procedure tWidgetHandler.RemoveWindow(Name: String);
@@ -190,7 +196,7 @@ begin
   imlib.free_font;
 end;
 
-constructor tWidgetHandler.Create(nBaseDirectory: String);
+constructor tWidgetHandler.Create(nBaseDirectory: String; nName:String);
 begin
    Inherited create;
    imlibcontext := imlib.context_new;
@@ -205,6 +211,7 @@ begin
    Images := tImagesByName.Create;
    Fonts := tFontsByName.Create;
    BaseDirectory := nBaseDirectory;
+   WidgetName := nName;
 
    OpenPipes;
 
@@ -275,10 +282,33 @@ begin
   try
      imlib.context_set_drawable(W.Window);
      imlib.context_set_image(W.Image);
-     imlib.Render_image_on_Drawable(0,0);
+     imlib.Render_image_on_Drawable_at_size(0,0,W.ScaledWidth,W.ScaledHeight);
   finally
     imlib.Context_pop;
   end;
+end;
+
+procedure tWidgetHandler.RecallWindow(W: tWidgetWindow);
+var
+  Frame : tRect;
+  X,Y : integer;
+begin
+  Frame := W.GetPosition;
+  X := ConfigFile.ReadInteger(WidgetName,W.Name+'_X',Frame.Left);
+  Y := ConfigFile.ReadInteger(WidgetName,W.Name+'_Y',Frame.Top);
+  W.Scale := ConfigFile.ReadFloat(WidgetName,W.Name+'_Scale',W.Scale);
+  W.MoveTo(X,Y);
+end;
+
+procedure tWidgetHandler.StoreWindow(W: tWidgetWindow);
+var
+  Frame : tRect;
+begin
+  Frame := W.GetPosition;
+  ConfigFIle.WriteInteger(WidgetName,W.Name+'_X',Frame.Left);
+  ConfigFIle.WriteInteger(WidgetName,W.Name+'_Y',Frame.Top);
+  ConfigFIle.WriteFloat(WidgetName,W.Name+'_Scale',W.Scale);
+  ConfigFile.UpdateFile;
 end;
 
 function KeyToAscii(KeyCode,state,Keysym:integer) : integer;
@@ -352,6 +382,8 @@ procedure tWidgetHandler.HandleXEvent(var event: tXevent; EventWindow : tWidgetW
 var
    keySym : tKeySym;
    keyascii : integer;
+   mouseX : integer;
+   mouseY : integer;
 begin
 //     writeln('event type:',event._type);
    case event._type of
@@ -366,11 +398,12 @@ begin
        SendEvent('keyrelease '+intToStr(event.xkey.keycode)+' '+intToStr(event.xkey.state) +' '+intToStr(keysym));
      end;
      buttonpress: begin
-
-       if EventWindow.EventMask[event.xbutton.x,event.xbutton.y] then
+       MouseX := round(event.xbutton.x/EventWindow.scale);
+       MouseY := round(event.xbutton.Y/EventWindow.scale);
+       if EventWindow.EventMask[MouseX,MouseY] then
        begin
          //Writeln('Event Zone hit');
-         SendEvent('buttonpress '+intToStr(event.xbutton.button)+' '+intToStr(event.xbutton.x)+' '+intToStr(event.xbutton.y));
+         SendEvent('buttonpress '+intToStr(event.xbutton.button)+' '+intToStr(MouseX)+' '+intToStr(MouseY));
          ButtonShadow[event.xbutton.button] := true;
        end
        else if event.xbutton.button = 1 then
@@ -384,14 +417,20 @@ begin
        end;
      end;
      buttonrelease: begin
-       if EventWindow.EventMask[event.xbutton.x,event.xbutton.y] or (ButtonShadow[event.xbutton.button])then
+       MouseX := round(event.xbutton.x/EventWindow.scale);
+       MouseY := round(event.xbutton.Y/EventWindow.scale);
+       if EventWindow.EventMask[MouseX,MouseY] or (ButtonShadow[event.xbutton.button])then
        begin
          //Writeln('Event Zone hit');
-         SendEvent('buttonrelease '+intToStr(event.xbutton.button)+' '+intToStr(event.xbutton.x)+' '+intToStr(event.xbutton.y));
+         SendEvent('buttonrelease '+intToStr(event.xbutton.button)+' '+intToStr(MouseX)+' '+intToStr(MouseY));
          ButtonShadow[event.xbutton.button]:=false;
        end
        else if event.xbutton.button = 1 then
        begin
+         if Dragging then
+         begin
+           StoreWindow(DragWindow);
+         end;
          Dragging := False;
        end;
      end;
@@ -413,24 +452,36 @@ end;
 
 procedure tWidgetHandler.CheckPipes;
 var
-  c : integer;
   Parameters : tStringList;
+  Buffer : array [0..1024] of byte;
+  C: integer;
+  Walk : pByte;
+  BytesInBuffer : integer;
 begin
   while Commands.numbytesAvailable > 0 do
   begin
     Connected := true;
     //C:= fileread(Commands.Handle,dummy,0);
-    C:=Commands.readbyte;
-    if c =10 then
-    begin
-      Parameters := tStringlist.create;
-      Parameters.Delimiter:=' ';
-      Parameters.DelimitedText:=CommandBuffer;
+    BytesInBuffer:=Commands.Read(Buffer,SizeOf(Buffer));
+    Walk := Addr(Buffer[0]);
 
-      DoCommand(Parameters);
-      parameters.free;
-      CommandBuffer := '';
-    end else CommandBuffer += chr(c);
+    while BytesInBuffer > 0 do
+    begin
+      C:=Walk^;
+      Walk+=1;
+      BytesInBuffer-=1;
+
+      if c =10 then
+      begin
+        Parameters := tStringlist.create;
+        Parameters.Delimiter:=' ';
+        Parameters.DelimitedText:=CommandBuffer;
+
+        DoCommand(Parameters);
+        parameters.free;
+        CommandBuffer := '';
+      end else CommandBuffer += chr(c);
+    end;
   end;
 end;
 
@@ -551,7 +602,7 @@ begin
        cmd_StartEvents: StartEvents;
        cmd_setShape:
                     begin
-                      Render_pixmaps_for_whole_image(addr(ImagePixmap),addr(Mask));
+                      Render_pixmaps_for_whole_image_at_size(addr(ImagePixmap),addr(Mask),CurrentWindow.scaledWidth,CurrentWindow.ScaledHeight);
                       CurrentWindow.SetShape(Mask);
                       imlib.free_pixmap_and_mask(ImagePixmap);
                     end;

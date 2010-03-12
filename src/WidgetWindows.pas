@@ -13,19 +13,24 @@ type
     procedure SetEventMask(const AValue: tBitmask);
   private
     FHeight: integer;
+    fscale: single;
     FWidth: integer;
     DesiredX : integer;
     DesiredY : integer;
+    getscale: single;
 
     WindowState : array of tAtom;
     MovePending : Boolean;
+    function getScaledHeight: integer;
+    function getScaledWidth: integer;
     procedure SetHeight(const AValue: integer);
+    procedure Setscale(const AValue: single);
     procedure SetWidth(const AValue: integer);
   public
 
   Window : twindow;
   Image : pImage;
-
+  Name: string;
   procedure AdaptToSize;
 
 	constructor Create(x,y,nwidth,nheight : integer);
@@ -33,9 +38,14 @@ type
   procedure SetShape(Mask : tPixmap);
   procedure MoveTo(X,Y : integer);
   procedure ProcessPendingTasks;
+  function GetPosition :tRect;
   property Width : integer read FWidth write SetWidth;
   property Height : integer read FHeight write SetHeight;
   property EventMask : tBitmask read FEventMask write SetEventMask;
+  property Scale: single read fscale write Setscale;
+  property ScaledWidth : integer read getScaledWidth;
+  property ScaledHeight : integer read getScaledHeight;
+
   end;
   
 
@@ -159,6 +169,22 @@ begin
   FHeight:=AValue;
 end;
 
+procedure tWidgetwindow.Setscale(const AValue: single);
+begin
+  fScale:=aValue;
+  MovePending :=True;
+end;
+
+function tWidgetwindow.getScaledHeight: integer;
+begin
+  result := round(fHeight*fScale);
+end;
+
+function tWidgetwindow.getScaledWidth: integer;
+begin
+  result := round(fWidth*fScale);
+end;
+
 procedure tWidgetWindow.SetWidth(const AValue: integer);
 begin
   if FWidth=AValue then exit;
@@ -187,6 +213,7 @@ var
 begin
   fWidth:= nWidth;
   fHeight:=nHeight;
+  scale:=0.5;
 {	Window :=XCreateSimpleWindow(Display,
 	XDefaultRootWindow(Display),
 	    x, y, nwidth,nheight, 0, BlackColor, BlackColor);
@@ -251,9 +278,24 @@ procedure tWidgetwindow.ProcessPendingTasks;
 begin
   if MovePending then
   begin
-    XMoveWindow(Display,Window,DesiredX,DesiredY);
+    XMoveResizeWindow(Display,Window,DesiredX,DesiredY,round(fWidth*fScale),round(fHeight*Scale));
     MovePending := False;
   end;
+end;
+
+function tWidgetwindow.GetPosition: tRect;
+var
+  Attributes : tXWindowAttributes;
+  X,Y,W,H,BW,D : integer;
+  C: tWindow;
+  Root : tWindow;
+begin
+  XGetWindowAttributes(Display,Window,@attributes);
+
+  XGetGeometry(Display,Window,@Root,@X,@Y,@W,@H,@BW,@D);
+  XTranslateCoordinates(Display,Window,Root,X,Y,@Result.Left,@Result.Top,@C);
+  result.Right :=Result.Left+W;
+  result.Bottom :=Result.Top+H;
 end;
 
 end.

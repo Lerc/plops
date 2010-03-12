@@ -351,13 +351,14 @@ uses
 
   procedure render_pixmaps_for_whole_image(pixmap_return:PPixmap; mask_return:PPixmap);cdecl;external name  'imlib_render_pixmaps_for_whole_image';
 
-  procedure render_pixmaps_for_whole_image_at_size(pixmap_return:PPixmap; mask_return:PPixmap; width:cint; height:cint);cdecl;external name  'imlib_render_';
+  procedure render_pixmaps_for_whole_image_at_size(pixmap_return:PPixmap; mask_return:PPixmap; width:cint; height:cint);cdecl;external name  'imlib_render_pixmaps_for_whole_image_at_size';
 
   procedure free_pixmap_and_mask(pixmap:TPixmap);cdecl;external name  'imlib_free_pixmap_and_mask';
 
   procedure render_image_on_drawable(x:cint; y:cint);cdecl;external name  'imlib_render_image_on_drawable';
 
-  procedure render_image_on_drawable_at_size(x:cint; y:cint; width:cint; height:cint);cdecl;external name  'imlib_render_image_on_drawble_at_size';
+  procedure render_image_on_drawable_at_size(x:cint; y:cint; width:cint; height:cint);cdecl;
+            external name  'imlib_render_image_on_drawable_at_size';
 
   procedure render_image_part_on_drawable_at_size(source_x:cint; source_y:cint; source_width:cint; source_height:cint; x:cint; 
               y:cint; width:cint; height:cint);cdecl;external name  'imlib_render_image_part_on_drawable_at_size';
