@@ -3,32 +3,44 @@ program battery;
 {$mode objfpc}{$H+}
 
 uses
-sysutils,BaseUnix,Math,DateUtils;
+sysutils,BaseUnix,Math,DateUtils,Classes,process, plopscommands;
 
 var
   CommandPipe : Text;
 
-procedure initclock;
+
+function RunProgram(cmdline : String) : String;
+  var
+     p : tProcess;
+     output : tStringList;
+  begin
+     p := tProcess.Create(nil);
+     Output := tStringlist.create;
+
+     p.Commandline:=cmdline;
+     p.Options := p.Options + [poWaitonExit,poUsePipes];
+     p.Execute;
+     Output.LoadFromStream(p.Output);
+     Result := Output.text;
+     output.free;
+     P.Free;
+end;
+
+procedure initBattery;
 begin
-  Writeln(CommandPipe,'create_window bob 300 200 64 128');
+  Writeln(CommandPipe,'create_window battery 300 200 64 128');
   Writeln(CommandPipe,'load_image batt Battery.png');
-  Writeln(CommandPipe,'set_image bob');
+  Writeln(CommandPipe,'set_image battery');
   Writeln(CommandPipe,'clear_color 0 255 0 0');
   Writeln(CommandPipe,'blend_image_onto_image batt 1 0 0 64 128 0 0 64 128');
-  Writeln(CommandPipe,'set_window bob');
+  Writeln(CommandPipe,'set_window battery');
   Writeln(CommandPipe,'set_shape');
   Writeln(CommandPipe,'set_has_alpha false');
 end;
 
 Function GetChargePercentage : integer;
-var
-  Batteryfile : text;
 begin
-  Result := 5;
-  Assign(BatteryFile,'Chargelevel_Link');
-  reset(BatteryFile);
-  read(BatteryFile,Result);
-  close(batteryFile);
+  Result := StrToIntDef(trim(RunProgram('./readbattery')),0);
 end;
 
 procedure update;
@@ -39,7 +51,7 @@ var
 begin
 
   Charge := GetChargePercentage;
-  Writeln(CommandPipe,'set_image bob');
+  Writeln(CommandPipe,'set_image battery');
   Writeln(CommandPipe,'blend_image_onto_image batt 1 0 0 200 200 0 0 200 200');
   Writeln(CommandPipe,'set_color 64 255 64 255 ');
 
@@ -70,7 +82,7 @@ begin
 
 
 
-  initclock;
+  initbattery;
 
   while true do
   begin

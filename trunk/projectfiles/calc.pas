@@ -532,7 +532,7 @@ begin
        writeln('prev',HistoryPosition-1);
        HistoryPosition:=HistoryPosition-1;
     end;
-    65421,65923:
+    65421,65293:  //enter, return
     begin
        Evaluate;
     end;

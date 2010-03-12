@@ -2,7 +2,8 @@ program plops;
 {$mode objfpc}{$H+}
 uses
   x, xlib, xshm, BaseUnix, unix, ipc,sysutils,sysconst, Classes, pipes, Imlib, WidgetWindows,
-  Widgethandlers, eventloop, CommandOptions, Bitmasks;
+  Widgethandlers, eventloop, CommandOptions, Bitmasks, controlbar,
+configuration;
 
 
 procedure LaunchProcess(Const Path: AnsiString; Const ComLine: Array Of AnsiString);
@@ -48,10 +49,11 @@ begin
   begin
        WidgetName := paramstr(I);
        WidgetDir := BAse+'/'+WidgetName;
+       WidgetName := ExtractFileName(WidgetName);
        Attr := FileGetAttr(WidgetDir);
        if (Attr > 0) and ((attr and faDirectory)<>0) then
        begin
-          Handler :=tWidgetHandler.Create(WidgetDir);
+          Handler :=tWidgetHandler.Create(WidgetDir,WidgetName);
           Handlers.add(Handler);
           SetCurrentDir(WidgetDir);
           Launchprocess(WidgetDir+'/'+WidgetName,['--launchedbyhandler']);
@@ -61,6 +63,7 @@ begin
 end;
 
 begin
+  loadconfig;
   WidgetWindows.init;
   AddHandlers;
   //writeln('starting event loop');
