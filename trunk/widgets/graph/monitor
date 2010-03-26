@@ -1,0 +1,39 @@
+#!/usr/bin/lua
+
+local lastidle =0
+local lastload=0
+local currentload=0
+local load = 0
+
+statpattern ="(%w+) (%d+) (%d+) (%d+)" 
+while true do
+
+  io.input("/proc/stat")
+  local cpuline = io.read("*line")
+  
+  local _,_,id,a,b,idle=string.find(cpuline,statpattern)
+
+  local currentload = (100-(idle-lastidle))/100*256
+  if currentload<0 then
+     currentload=0
+  end
+  desiredload=(currentload+lastload)/2
+  lastload=currentload
+  loaddiff = (desiredload-load)/4
+  lastidle=idle
+  io.close()
+--  io.stdout:write("id=",id,"\n")
+--  io.stdout:write("a=",a,"\n")
+  load=math.floor(load+loaddiff)
+  io.stdout:write(load,"\n")
+  load=math.floor(load+loaddiff)
+  io.stdout:write(load,"\n")
+  load=math.floor(load+loaddiff)
+  io.stdout:write(load,"\n")
+  load=math.floor(desiredload)
+  io.stdout:write(load,"\n")
+--  io.stdout:write("idle=",idle,"\n")
+
+  io.stdout:flush()
+  os.execute("sleep 1")
+end
