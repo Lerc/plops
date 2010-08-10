@@ -23,9 +23,11 @@ type
     MovePending : Boolean;
     function getScaledHeight: integer;
     function getScaledWidth: integer;
+    function getWorkspace: integer;
     procedure SetHeight(const AValue: integer);
     procedure Setscale(const AValue: single);
     procedure SetWidth(const AValue: integer);
+    procedure SetWorkspace(const AValue: integer);
   public
 
   Window : twindow;
@@ -45,7 +47,7 @@ type
   property Scale: single read fscale write Setscale;
   property ScaledWidth : integer read getScaledWidth;
   property ScaledHeight : integer read getScaledHeight;
-
+  property Workspace : integer read getWorkspace write SetWorkspace;
   end;
   
 
@@ -71,6 +73,7 @@ var
   WindowState_Sticky_atom : tAtom;
   WindowState_OpenBox_Undecorated_atom : tAtom;
   Motif_Hints_atom : tAtom;
+  Desktop_atom : tAtom;
 
   ChosenWindowType_atom : tAtom;
 implementation
@@ -148,6 +151,8 @@ begin
   ChosenWindowType_atom := XInternAtom(Display,pchar(WindowType),True);
   Motif_Hints_atom :=XInternAtom(Display,'_MOTIF_WM_HINTS',False);
 
+  Desktop_atom :=XInternAtom(Display,'_NET_WM_DESKTOP',False);
+
 end;
 
 procedure done; 
@@ -185,10 +190,54 @@ begin
   result := round(fWidth*fScale);
 end;
 
+function tWidgetwindow.getWorkspace: integer;
+var
+  Type_return: tAtom;
+  Format_Return : integer;
+  nItems_Return : dword;
+  bytes_after_Return :dword;
+  Value : pInteger;
+  xresult : integer;
+begin
+  value := nil;
+  xresult:=XGetWindowProperty(Display,Window,Desktop_Atom,0,1,false,XA_CARDINAL,
+            addr(Type_Return),
+            addr(Format_return),
+            addr(nItems_return),
+            addr(Bytes_after_return),
+            Addr(value));
+  if xresult <> Success then
+  begin
+    result := -1;
+  end
+  else
+  begin
+    Result := Value^;
+  end;
+  if (Value <> nil) then XFree(Value);
+end;
+
 procedure tWidgetWindow.SetWidth(const AValue: integer);
 begin
   if FWidth=AValue then exit;
   FWidth:=AValue;
+end;
+
+procedure tWidgetwindow.SetWorkspace(const AValue: integer);
+var
+    Event : tXEvent;
+begin
+    fillchar(Event,Sizeof(Event),0);
+    Event._type:=ClientMessage;
+    Event.xclient.window:=window;
+    Event.xclient.display:=display;
+    Event.xclient.message_type:=Desktop_atom;
+    Event.xclient.format:=32;
+    Event.xclient.data.l[0]:=AValue;
+
+    XSendEvent(display,XDefaultRootWindow(display),false,SubstructureNotifyMask or SubstructureRedirectMask,Addr(Event));
+
+//   XChangeProperty(display,window,Desktop_atom,XA_CARDINAL,32,PropModeReplace,addr(Avalue),1);
 end;
 
 procedure tWidgetWindow.AdaptToSize;
