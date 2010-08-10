@@ -297,6 +297,7 @@ begin
   X := ConfigFile.ReadInteger(WidgetName,W.Name+'_X',Frame.Left);
   Y := ConfigFile.ReadInteger(WidgetName,W.Name+'_Y',Frame.Top);
   W.Scale := ConfigFile.ReadFloat(WidgetName,W.Name+'_Scale',W.Scale);
+  W.Workspace := ConfigFile.ReadInteger(WidgetName,W.Name+'_Workspace',0);
   W.MoveTo(X,Y);
 end;
 
@@ -308,6 +309,7 @@ begin
   ConfigFIle.WriteInteger(WidgetName,W.Name+'_X',Frame.Left);
   ConfigFIle.WriteInteger(WidgetName,W.Name+'_Y',Frame.Top);
   ConfigFIle.WriteFloat(WidgetName,W.Name+'_Scale',W.Scale);
+  ConfigFIle.WriteInteger(WidgetName,W.Name+'_Workspace',W.Workspace);
   ConfigFile.UpdateFile;
 end;
 
@@ -398,6 +400,12 @@ begin
        SendEvent('keyrelease '+intToStr(event.xkey.keycode)+' '+intToStr(event.xkey.state) +' '+intToStr(keysym));
      end;
      buttonpress: begin
+       if event.xbutton.button=2 then begin
+         //xunmapwindow(display,EventWindow.window);
+          Eventwindow.Workspace:=(Eventwindow.Workspace + 1) and 3;
+         //xmapwindow(display,EventWindow.window);
+
+       end;
        MouseX := round(event.xbutton.x/EventWindow.scale);
        MouseY := round(event.xbutton.Y/EventWindow.scale);
        if EventWindow.EventMask[MouseX,MouseY] then
